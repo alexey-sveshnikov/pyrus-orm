@@ -23,12 +23,38 @@ class Book(PyrusModel):
     class Meta:
         form_id = <form_id>
 
-
 pyrus_api = PyrusAPI(...)
 session = PyrusORMSession(pyrus_api)
 
-with set_session(session):
-    book = Book.objects.get(id=...)
-    book.title = 'Don Quixote'
-    book.save()
+set_session_global(session)
+
+
+# read and modify task item
+
+book = Book.objects.get(id=...)
+
+book.title
+>>> 'Don Quixote'
+
+book.author.values['Name']
+>>> 'Alonso Fernández de Avellaneda'
+
+book.author.find_and_set({'Name': 'Miguel de Cervantes'})
+
+book.save()
+
+
+# explore things
+
+book.author
+# CatalogItem(item_id=..., values=<dict with your custom properties>)
+
+book.author.catalog() 
+>>> [CatalogItem(...), CatalogItem(...), ...]
+
+book.author.catalog().find({'Name': 'William Shakespeare'})
+>>> CatalogItem(...)
+
+book.author.catalog().find({'Name': 'NonExistent'})
+>>> ValueError raised
 ```

@@ -1,4 +1,5 @@
 import contextlib
+from functools import lru_cache
 from typing import Any, Optional
 
 from pyrus import PyrusAPI
@@ -8,18 +9,21 @@ class PyrusORMSession:
     def __init__(self, pyrus_api: PyrusAPI):
         self.pyrus_api = pyrus_api
 
+    @lru_cache(maxsize=512)
     def get_catalog(self, catalog_id: int):
-        from pyrus_orm.types import CatalogItem
+        from pyrus_orm.catalog import CatalogItem
 
-        items = self.pyrus_api.get_catalog(catalog_id).items
+        catalog = self.pyrus_api.get_catalog(catalog_id)
+        headers = [x.name for x in catalog.catalog_headers]
         return [
             CatalogItem(
                 item_id=item.item_id,
                 catalog_id=catalog_id,
-                headers=item.headers,
+                headers=headers,
                 values_row=item.values,
+                values=dict(zip(headers, item.values))
             )
-            for item in items
+            for item in catalog.items
         ]
 
     def get_task_raw(self, task_id: int) -> dict[str, Any]:

@@ -1,6 +1,8 @@
+import operator
 from typing import Literal, Optional, Generic, TypeVar, Union, TYPE_CHECKING
 
-from .types import Flag, Status, CatalogItem
+from .catalog import CatalogItem, CatalogEmptyValue
+from .types import Flag, Status
 
 if TYPE_CHECKING:
     from .model import PyrusModel
@@ -75,11 +77,15 @@ class CatalogField(BaseField):
         super().__init__(id)
         self._catalog_id = catalog_id
 
-    def __get__(self, instance: 'PyrusModel', owner):
-        value = instance._field_values[self.id]['value']
+    def __get__(self, instance: 'PyrusModel', owner) -> Union[CatalogEmptyValue, CatalogItem]:
+        field_data = instance._field_values[self.id]
+        if 'value' not in field_data:
+            return CatalogEmptyValue(self._catalog_id)
+
         return CatalogItem.from_pyrus_data(
             catalog_id=self._catalog_id,
-            data=value,
+            data=field_data['value'],
+            bound_field_setter=lambda value: self.__set__(instance, value),
         )
 
     def __set__(self, instance: 'PyrusModel', value: Union[CatalogItem, int]):
@@ -92,3 +98,4 @@ class CatalogField(BaseField):
         instance._field_values[self.id]['value'] = {
             'item_id': item_id
         }
+        instance._changed_fields.add(self.id)

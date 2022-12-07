@@ -4,10 +4,10 @@ from typing import Any
 import pytest
 from pyrus import PyrusAPI
 
+from pyrus_orm.catalog import CatalogItem
 from pyrus_orm.fields import TextField, NumericField, CatalogField
 from pyrus_orm.model import PyrusModel
 from pyrus_orm.session import PyrusORMSession, set_session
-from pyrus_orm.types import CatalogItem
 
 
 @pytest.fixture
@@ -68,6 +68,9 @@ class Model(PyrusModel):
     counter = NumericField(20)
     vendor = CatalogField(30, catalog_id=12345)
 
+    class Meta:
+        form_id = 123
+
 
 def test_text_field(form_data: dict[str, Any], session: PyrusORMSession) -> None:
     model = Model.from_pyrus_data(form_data)
@@ -98,3 +101,4 @@ def test_single_catalog_field(form_data: dict[str, Any], session: PyrusORMSessio
 
     model.vendor = CatalogItem(item_id=123)
     assert model.vendor == CatalogItem(item_id=123)
+
