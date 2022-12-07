@@ -34,6 +34,35 @@ class PyrusORMSession:
 
         return response['task']
 
+    def update_task(self, task_id: int, field_updates: list[Any], comment: Optional[str] = None) -> None:
+        response = self.pyrus_api._perform_post_request(
+            self.pyrus_api._create_url(f'/tasks/{task_id}/comments'),
+            {
+                'text': comment,
+                'field_updates': field_updates,
+            }
+        )
+        if 'error' in response:
+            raise Exception(response['error'])  # TODO: proper error handling
+
+        if not response.get('task'):
+            raise Exception('no task received')
+
+        return response['task']
+
+    def create_task(self, data: dict[str, Any]) -> dict[str, Any]:
+        response = self.pyrus_api._perform_post_request(
+            self.pyrus_api._create_url(f'/tasks'),
+            data
+        )
+        if 'error' in response:
+            raise Exception(response['error'])  # TODO: proper error handling
+
+        if not response.get('task'):
+            raise Exception('no task received')
+
+        return response['task']
+
 
 _session: Optional[PyrusORMSession] = None
 
@@ -52,3 +81,8 @@ def set_session(session: PyrusORMSession):
     _session = session
     yield
     _session = prev_value
+
+
+def set_session_global(session: PyrusORMSession) -> None:
+    global _session
+    _session = session

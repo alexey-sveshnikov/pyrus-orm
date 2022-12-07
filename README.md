@@ -21,7 +21,7 @@ class Book(PyrusModel):
     author = CatalogField(3, catalog=<catalog id>)
 
     class Meta:
-        registry_id = <registry id>
+        form_id = <form_id>
 
 
 pyrus_api = PyrusAPI(...)

@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional, TypedDict, Self
+from typing import Optional, TypedDict
+
+from typing_extensions import Self
 
 
 class Status(str, Enum):

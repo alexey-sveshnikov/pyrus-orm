@@ -31,6 +31,7 @@ class BaseField(Generic[T]):
 
     def __set__(self, instance, value: T):
         instance._field_values[self.id]['value'] = value
+        instance._changed_fields.add(self.id)
 
 
 class TextField(BaseField[str]):
@@ -74,14 +75,14 @@ class CatalogField(BaseField):
         super().__init__(id)
         self._catalog_id = catalog_id
 
-    def __get__(self, instance: PyrusModel, owner):
+    def __get__(self, instance: 'PyrusModel', owner):
         value = instance._field_values[self.id]['value']
         return CatalogItem.from_pyrus_data(
             catalog_id=self._catalog_id,
             data=value,
         )
 
-    def __set__(self, instance: PyrusModel, value: Union[CatalogItem, int]):
+    def __set__(self, instance: 'PyrusModel', value: Union[CatalogItem, int]):
         if isinstance(value, CatalogItem):
             item_id = value.item_id
         else:
