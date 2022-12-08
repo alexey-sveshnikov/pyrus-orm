@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "pyrus-orm"
+version = "0.1.0"
+description = "Radically simple ORM for Pyrus's tasks"
+authors = ["Alexey Sveshnikov"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pyrus-api = "^2.13.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
