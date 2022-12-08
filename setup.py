@@ -5,7 +5,7 @@ setup(
     version='0.1',
     author='Alexey Sveshnikov',
     packages=['pyrus_orm'],
-    requires=[
+    install_requires=[
         'pyrus-api'
     ]
 )
