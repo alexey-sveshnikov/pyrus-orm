@@ -2,6 +2,7 @@ import copy
 from datetime import datetime
 from typing import Any, TypeVar, Type, Optional, Protocol
 
+from pyrus_orm.fields import BaseField
 from pyrus_orm.manager import _ManagerProperty
 from pyrus_orm.session import get_session
 
@@ -10,10 +11,11 @@ T = TypeVar('T', bound='PyrusModel')
 
 class _ModelMeta(Protocol):
     form_id: int
+    _fields: dict[int, BaseField]
 
 
 class PyrusModel:
-    id: int
+    id: Optional[int]
     create_date: datetime
     last_modified_date: datetime
 
@@ -34,35 +36,52 @@ class PyrusModel:
         except (ValueError, AttributeError) as e:
             raise Exception('Model.Meta.form_id is not set') from e
 
+    def __init__(self, **kwargs):
+        self._field_values = {}
+        self._changed_fields = set()
+        self.id = None
+
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+        for field_name, field in self.Meta._fields.items():
+            if field_name not in self._field_values:
+                self._field_values[field_name] = {
+                    'id': field.id,
+                }
+
     @classmethod
     def from_pyrus_data(
         cls: Type[T],
         data: dict[str, Any],
     ) -> T:
         data = copy.deepcopy(data)
-        obj = cls()
-        fields = data.pop('fields')
-        obj._data = data
-        obj._field_values = {
-            f['id']: f
-            for f in fields
-        }
-        obj._changed_fields = set()
-
-        obj.id = data['id']
 
         def fix_datetime(v: str) -> str:
             # makes datetime compatible with python's 3.9 fromisoformat() function
             # 3.10+ does not require this
             return v.replace('Z', '+00:00')
 
-        obj.create_date = datetime.fromisoformat(fix_datetime(data['create_date']))
-        obj.last_modified_date = datetime.fromisoformat(fix_datetime(data['last_modified_date']))
+        create_date = datetime.fromisoformat(fix_datetime(data['create_date']))
+        last_modified_date = datetime.fromisoformat(fix_datetime(data['last_modified_date']))
+
+        fields = data.pop('fields')
+
+        obj = cls(
+            id=data['id'],
+            _data=data,
+            _field_values={
+                f['id']: f
+                for f in fields
+            },
+            create_date=create_date,
+            last_modified_date=last_modified_date,
+        )
         return obj
 
     def as_pyrus_data(self):
         return {
-            **self._data,
+            **(self._data or {}),
             'fields': self.get_pyrus_fields_data(),
             'form_id': self.Meta.form_id,
         }
@@ -78,4 +97,6 @@ class PyrusModel:
         if self.id:
             get_session().update_task(self.id, self.get_pyrus_fields_data(changed_only=True), comment)
         else:
-            get_session().create_task(self.as_pyrus_data())
+            data = get_session().create_task(self.as_pyrus_data())
+            new_item = type(self).from_pyrus_data(data)
+            self.__dict__ = new_item.__dict__

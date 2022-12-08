@@ -1,4 +1,3 @@
-import operator
 from typing import Literal, Optional, Generic, TypeVar, Union, TYPE_CHECKING
 
 from .catalog import CatalogItem, CatalogEmptyValue
@@ -26,6 +25,9 @@ class BaseField(Generic[T]):
         self.id = id
 
     def __set_name__(self, owner, name):
+        if not hasattr(owner.Meta, '_fields'):
+            setattr(owner.Meta, '_fields', {})
+        owner.Meta._fields[self.name] = self
         self.name = name
 
     def __get__(self, instance: 'PyrusModel', owner) -> T:
@@ -78,13 +80,14 @@ class CatalogField(BaseField):
         self._catalog_id = catalog_id
 
     def __get__(self, instance: 'PyrusModel', owner) -> Union[CatalogEmptyValue, CatalogItem]:
-        field_data = instance._field_values[self.id]
-        if 'value' not in field_data:
+        try:
+            field_value = instance._field_values[self.id]['value']
+        except (KeyError, AttributeError):
             return CatalogEmptyValue(self._catalog_id)
 
         return CatalogItem.from_pyrus_data(
             catalog_id=self._catalog_id,
-            data=field_data['value'],
+            data=field_value,
             bound_field_setter=lambda value: self.__set__(instance, value),
         )
 

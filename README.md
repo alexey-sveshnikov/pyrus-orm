@@ -28,8 +28,20 @@ session = PyrusORMSession(pyrus_api)
 
 set_session_global(session)
 
+# create item
 
-# read and modify task item
+book = Book(
+    title='Don Quixote',
+    date='1605-01-01',
+    author=Book.author.find({'Name': 'Alonso Fernández de Avellaneda'})
+)
+
+book.save()
+
+book.id
+>>> <task_id>
+
+# read and modify item
 
 book = Book.objects.get(id=...)
 
@@ -39,7 +51,7 @@ book.title
 book.author.values['Name']
 >>> 'Alonso Fernández de Avellaneda'
 
-book.author.find_and_set({'Name': 'Miguel de Cervantes'})
+book.author.find_and_set({'Name': 'Miguel de Cervantes'})  # may raise ValueError if no value found
 
 book.save()
 
