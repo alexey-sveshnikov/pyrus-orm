@@ -1,6 +1,6 @@
 import copy
 from datetime import datetime
-from typing import Any, TypeVar, Type, Optional, Protocol
+from typing import Any, TypeVar, Type, Optional
 
 from pyrus_orm.fields import BaseField
 from pyrus_orm.manager import _ManagerProperty
@@ -9,23 +9,20 @@ from pyrus_orm.session import get_session
 T = TypeVar('T', bound='PyrusModel')
 
 
-class _ModelMeta(Protocol):
-    form_id: int
-    _fields: dict[int, BaseField]
-
-
 class PyrusModel:
     id: Optional[int]
     create_date: datetime
     last_modified_date: datetime
-
-    Meta: _ModelMeta
 
     _data = None
     _field_values: dict[int, Any] = {}
     _changed_fields: set[int]
 
     objects: _ManagerProperty[T]
+
+    class Meta:
+        form_id: int
+        fields: dict[str, BaseField]
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -44,7 +41,7 @@ class PyrusModel:
         for k, v in kwargs.items():
             setattr(self, k, v)
 
-        for field_name, field in self.Meta._fields.items():
+        for field_name, field in self.Meta.fields.items():
             if field_name not in self._field_values:
                 self._field_values[field_name] = {
                     'id': field.id,

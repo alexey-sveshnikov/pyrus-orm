@@ -23,10 +23,12 @@ class Book(PyrusModel):
     class Meta:
         form_id = <form_id>
 
+
 pyrus_api = PyrusAPI(...)
 session = PyrusORMSession(pyrus_api)
 
 set_session_global(session)
+
 
 # create item
 
@@ -40,6 +42,7 @@ book.save()
 
 book.id
 >>> <task_id>
+
 
 # read and modify item
 
@@ -56,17 +59,58 @@ book.author.find_and_set({'Name': 'Miguel de Cervantes'})  # may raise ValueErro
 book.save()
 
 
+# enum fields
+# Enums can be mapped to catalog items by ID or by custom property name.
+# If enum's mapped to catalog items using ID, no catalog lookups are performed when reading or writing such fields.
+
+class Genre(Enum):
+    fiction = 100001
+    nonfiction = 100002
+
+
+class Book(PyrusModel):
+    ...
+    genre = CatalogEnumField(<field_id>, catalog_id=<catalog_id>, enum=Genre, id_field='item_id')
+
+    book = Book.objects.get(id=...)
+
+book.genre
+>>> Genre.fiction
+
+book.genre = Genre.nonfiction
+book.save()
+
+book.genre
+>>> Genre.nonfiction
+
+
+# defining enum fields, mapped to catalog item property
+# (imagine book has a property 'media' with field 'Name')
+
+class Media(Enum):
+    paper = 'paper'
+    papirus = 'papirus'
+    pdf = 'pdf'
+
+class Book(PyrusModel):
+    ...
+    media = CatalogEnumField(<field_id>, catalog_id=<catalog_id>, enum=Genre, id_field='Name')
+
+
 # explore things
 
 book.author
-# CatalogItem(item_id=..., values=<dict with your custom properties>)
+>>> CatalogItem(item_id=..., values=<dict with your custom properties>)
 
-book.author.catalog() 
+book.author.catalog()
 >>> [CatalogItem(...), CatalogItem(...), ...]
 
 book.author.catalog().find({'Name': 'William Shakespeare'})
 >>> CatalogItem(...)
 
 book.author.catalog().find({'Name': 'NonExistent'})
+>>> None
+
+book.author.find_and_set({'Name': 'NonExistent'})
 >>> ValueError raised
 ```
