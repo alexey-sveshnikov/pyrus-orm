@@ -7,11 +7,13 @@ With pyrus-orm, you can read, create and modify [tasks](https://pyrus.com/en/hel
 
 Works with [pyrus-api](https://github.com/simplygoodsoftware/pyrusapi-python) under the hood.
 
-This is an early development version
-------------------------------------
+### This is an early development version
 
-Example
+Examples
 -------
+
+
+### Define model and initialize
 
 ```python
 
@@ -28,10 +30,12 @@ pyrus_api = PyrusAPI(...)
 session = PyrusORMSession(pyrus_api)
 
 set_session_global(session)
+```
 
 
-# create item
+### Create item
 
+```python
 book = Book(
     title='Don Quixote',
     date='1605-01-01',
@@ -42,10 +46,12 @@ book.save()
 
 book.id
 >>> <task_id>
+```
 
 
-# read and modify item
+### Read and modify item
 
+```python
 book = Book.objects.get(id=...)
 
 book.title
@@ -57,22 +63,24 @@ book.author.values['Name']
 book.author.find_and_set({'Name': 'Miguel de Cervantes'})  # may raise ValueError if no value found
 
 book.save()
+```
 
+### Enum fields
 
-# enum fields
-# Enums can be mapped to catalog items by ID or by custom property name.
-# If enum's mapped to catalog items using ID, no catalog lookups are performed when reading or writing such fields.
+Enums can be mapped to catalog items by ID or by custom property name.
 
+When values are mapped using ID, there are no catalog lookups when reading or writing such fields.
+
+```python
 class Genre(Enum):
     fiction = 100001
     nonfiction = 100002
 
 
 class Book(PyrusModel):
-    ...
     genre = CatalogEnumField(<field_id>, catalog_id=<catalog_id>, enum=Genre, id_field='item_id')
 
-    book = Book.objects.get(id=...)
+book = Book.objects.get(id=...)
 
 book.genre
 >>> Genre.fiction
@@ -82,23 +90,26 @@ book.save()
 
 book.genre
 >>> Genre.nonfiction
+```
 
+Defining enum fields, mapped to catalog item property
 
-# defining enum fields, mapped to catalog item property
-# (imagine book has a property 'media' with field 'Name')
+(imagine book has a property 'media' with field 'Name')
 
+```python
 class Media(Enum):
     paper = 'paper'
     papirus = 'papirus'
     pdf = 'pdf'
 
 class Book(PyrusModel):
-    ...
     media = CatalogEnumField(<field_id>, catalog_id=<catalog_id>, enum=Genre, id_field='Name')
+```
 
 
-# explore things
+### Explore things
 
+```python
 book.author
 >>> CatalogItem(item_id=..., values=<dict with your custom properties>)
 
