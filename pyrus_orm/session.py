@@ -1,8 +1,10 @@
+from __future__ import annotations
 import contextlib
 from functools import lru_cache
-from typing import Any, Optional
+from typing import Any, Optional, TYPE_CHECKING
 
-from pyrus import PyrusAPI
+if TYPE_CHECKING:
+    from pyrus import PyrusAPI
 
 
 class PyrusORMSession:

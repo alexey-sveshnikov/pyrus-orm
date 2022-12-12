@@ -43,7 +43,7 @@ class PyrusModel:
 
         for field_name, field in self.Meta.fields.items():
             if field_name not in self._field_values:
-                self._field_values[field_name] = {
+                self._field_values[field.id] = {
                     'id': field.id,
                 }
 

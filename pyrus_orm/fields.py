@@ -29,7 +29,7 @@ class BaseField(Generic[T]):
     def __set_name__(self, owner, name):
         if not hasattr(owner.Meta, 'fields'):
             setattr(owner.Meta, 'fields', {})
-        owner.Meta.fields[self.name] = self
+        owner.Meta.fields[name] = self
         self.name = name
 
     def __get__(self, instance: 'PyrusModel', owner) -> T:

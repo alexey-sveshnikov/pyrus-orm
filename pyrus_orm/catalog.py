@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Optional, TypedDict, Any, TYPE_CHECKING, Callable
 
-from pyrus.models.entities import CatalogItem
 from typing_extensions import Self
 
 if TYPE_CHECKING:
@@ -16,8 +15,8 @@ class PyrusCatalogSingleItem(TypedDict):
     rows: list[list[str]]
 
 
-class _CatalogListWrapper(list[CatalogItem]):
-    def find(self, pattern: dict[str, Any]) -> Optional[CatalogItem]:
+class _CatalogListWrapper(list['CatalogItem']):
+    def find(self, pattern: dict[str, Any]) -> Optional['CatalogItem']:
         for item in self:
             for k, v in pattern.items():
                 if item.values[k] != v:
