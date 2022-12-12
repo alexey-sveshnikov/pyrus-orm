@@ -1,13 +1,31 @@
 pyrus-orm
 =========
 
-Radically simple, django/peewee-like, easy and **incomplete** ORM for [Pyrus](https://pyrus.com).
+Radically simple, django/peewee-like, easy and incomplete ORM for [Pyrus](https://pyrus.com).
 
 With pyrus-orm, you can read, create and modify [tasks](https://pyrus.com/en/help/api/models#form-registry-task).
 
 Works with [pyrus-api](https://github.com/simplygoodsoftware/pyrusapi-python) under the hood.
 
 ### This is an early development version
+
+### Features:
+
+- Define models with:
+    - [x] simple fields (text, number, dates, ...)
+    - [x] catalog fields, single item
+    - [ ] catalog fields, multiple items
+    - [ ] "title" fields
+- Operations with models:
+    - [x] Create and save
+    - [x] Read from registry by ID
+    - [x] Modify and save changes
+- Filtering:
+    - [x] by include_archived and steps fields
+    - [x] by value of simple or catalog fields
+    - [ ] less than, greater than
+    - [ ] value in a list
+    - [ ] ranges
 
 Installation
 -----------
@@ -61,22 +79,27 @@ book.id
 ```python
 book = Book.objects.get(id=...)
 
+# simple field
 book.title
 >>> 'Don Quixote'
+book.title = 'Don Quixote, Part Two'
+book.save('title changed')
 
-book.author.values['Name']
->>> 'Alonso Fernández de Avellaneda'
+# catalog field
+book.author
+>>> CatalogItem(item_id=..., values={'Name': 'Alonso Fernández de Avellaneda'})  # values comes from the catalog definition
 
 book.author.find_and_set({'Name': 'Miguel de Cervantes'})  # may raise ValueError if no value found
-
-book.save()
+book.save('changed an author to the real one')
 ```
 
-### Enum fields
+### Catalog Enum fields
 
 Enums can be mapped to catalog items by ID or by custom property name.
 
-When values are mapped using ID, there are no catalog lookups when reading or writing such fields.
+#### Enums mapped to specific catalog items ID
+
+No catalog lookups are preformed on reading or writing of such fields.
 
 ```python
 class Genre(Enum):
@@ -99,7 +122,8 @@ book.genre
 >>> Genre.nonfiction
 ```
 
-Defining enum fields, mapped to catalog item property
+
+#### Enums mapped to catalog item properties
 
 (imagine book has a property 'media' with field 'Name')
 
@@ -139,21 +163,44 @@ Book.objects.get_filtered(
 ```
 
 
-### Explore things
-
+### Catalog fields, all the API
 ```python
-book.author
->>> CatalogItem(item_id=..., values=<dict with your custom properties>)
+# Read values
 
+# Non-empty value
+book.author
+>>> CatalogItem(item_id=..., values={<your custom values here>})
+
+assert bool(book.author) == True
+
+# Empty value
+book.author
+>>> CatalogEmptyValue()
+
+assert bool(book.author) == False
+
+
+# Get all possible values (works for empty fields as well)
 book.author.catalog()
 >>> [CatalogItem(...), CatalogItem(...), ...]
 
-book.author.catalog().find({'Name': 'William Shakespeare'})
->>> CatalogItem(...)
 
-book.author.catalog().find({'Name': 'NonExistent'})
->>> None
+# Find a value in a catalog
+new_author = book.author.catalog().find({'Name': 'Miguel de Cervantes'})
+new_author
+>>> CatalogItem(item_id=..., values={'Name': 'Miguel de Cervantes'})  # or None
+
+book.author = new_author
+book.save()
+
+
+# Find and set shortcut
+book.author.catalog().find_and_set({'Name': 'William Shakespeare'})
 
 book.author.find_and_set({'Name': 'NonExistent'})
 >>> ValueError raised
+
+
+# Set value to a specific item_id
+book.author = CatalogItem(item_id=123456)
 ```
