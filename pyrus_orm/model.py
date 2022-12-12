@@ -1,6 +1,6 @@
 import copy
 from datetime import datetime
-from typing import Any, TypeVar, Type, Optional
+from typing import Any, TypeVar, Type, Optional, Generic
 
 from pyrus_orm.fields import BaseField
 from pyrus_orm.manager import _ManagerProperty
@@ -9,7 +9,7 @@ from pyrus_orm.session import get_session
 T = TypeVar('T', bound='PyrusModel')
 
 
-class PyrusModel:
+class PyrusModel(Generic[T]):
     id: Optional[int]
     create_date: datetime
     last_modified_date: datetime
@@ -84,7 +84,7 @@ class PyrusModel:
         }
 
     def get_pyrus_fields_data(self, changed_only: bool = False) -> list[Any]:
-        values = self._field_values.values()
+        values = list(self._field_values.values())
         if changed_only:
             values = [x for x in values if x['id'] in self._changed_fields]
 

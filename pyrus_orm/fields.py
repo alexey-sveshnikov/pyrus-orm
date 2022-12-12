@@ -12,7 +12,7 @@ FieldType = Literal[
     'text', 'money', 'number', 'date', 'time',
     'checkmark', 'due_date', 'due_date_time',
     'email', 'phone', 'flag', 'step', 'status',
-    'creation_date', 'note',
+    'creation_date', 'note', 'catalog',
 ]
 
 T = TypeVar('T')
@@ -32,7 +32,7 @@ class BaseField(Generic[T]):
         owner.Meta.fields[name] = self
         self.name = name
 
-    def __get__(self, instance: 'PyrusModel', owner) -> T:
+    def __get__(self, instance: 'PyrusModel', owner) -> Optional[T]:
         return instance._field_values[self.id]['value']
 
     def __set__(self, instance, value: T):
@@ -114,7 +114,7 @@ T_Enum = TypeVar('T_Enum', bound=Enum)
 class CatalogEnumField(BaseField[T_Enum]):
     type = 'catalog'
     _catalog_id: int
-    _enum: T_Enum
+    _enum: Type[T_Enum]
     _id_field: str
 
     def __init__(self, id: int, *, catalog_id: int, enum: Type[T_Enum], id_field: str):

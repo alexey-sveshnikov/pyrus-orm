@@ -1,8 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Optional, TypedDict, Any, TYPE_CHECKING, Callable
 
-from typing_extensions import Self
-
 if TYPE_CHECKING:
     pass
 
@@ -27,12 +25,12 @@ class _CatalogListWrapper(list['CatalogItem']):
 
 
 class _CatalogMixin:
-    catalog_id: int
+    catalog_id: Optional[int]
 
     def __init__(self, catalog_id: int):
         self.catalog_id = catalog_id
 
-    def catalog(self) -> _CatalogListWrapper['CatalogItem']:
+    def catalog(self) -> _CatalogListWrapper:
         from pyrus_orm.session import get_session
         assert self.catalog_id, 'catalog_id is not set'
 
@@ -55,15 +53,15 @@ class CatalogItem(_CatalogMixin):
         data: PyrusCatalogSingleItem,
         catalog_id: Optional[int],
         bound_field_setter: Optional[Callable[['CatalogItem'], None]]
-    ) -> Self:
+    ) -> 'CatalogItem':
         return cls(
             catalog_id=catalog_id,
             item_id=data['item_id'],
-            headers=data.get('headers'),
-            values_row=data.get('values'),
+            headers=data.get('headers', []),
+            values_row=data.get('values', []),
             values=(
                 dict(zip(data['headers'], data['values']))
-                if 'headers' in data and 'values' in data else None
+                if 'headers' in data and 'values' in data else {}
             ),
             _bound_field_setter=bound_field_setter,
         )

@@ -1,4 +1,4 @@
-from typing import TypeVar, Type, Generic
+from typing import TypeVar, Type, Generic, Optional
 
 T = TypeVar('T', bound='PyrusModel')
 
@@ -9,7 +9,7 @@ class Manager(Generic[T]):
     def __init__(self, model: Type[T]):
         self._model = model
 
-    def get(self, task_id: int):
+    def get(self, task_id: int) -> Optional[T]:
         from pyrus_orm.session import get_session
 
         data = get_session().get_task_raw(task_id)
