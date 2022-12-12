@@ -75,12 +75,14 @@ _session: Optional[PyrusORMSession] = None
 
 def get_session() -> PyrusORMSession:
     global _session
-    assert _session is not None
+    assert _session is not None, 'no pyrus-orm session is set. ' \
+                                 'try calling set_session_global or use `with set_session(..):`'
     return _session
 
 
 @contextlib.contextmanager
 def set_session(session: PyrusORMSession):
+    assert isinstance(session, PyrusORMSession)
     global _session
     prev_value = _session
 

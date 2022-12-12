@@ -38,14 +38,14 @@ class PyrusModel:
         self._changed_fields = set()
         self.id = None
 
-        for k, v in kwargs.items():
-            setattr(self, k, v)
-
         for field_name, field in self.Meta.fields.items():
             if field_name not in self._field_values:
                 self._field_values[field.id] = {
                     'id': field.id,
                 }
+
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
     @classmethod
     def from_pyrus_data(
@@ -97,3 +97,6 @@ class PyrusModel:
             data = get_session().create_task(self.as_pyrus_data())
             new_item = type(self).from_pyrus_data(data)
             self.__dict__ = new_item.__dict__
+
+    def get_url(self):
+        return f'https://pyrus.com/t#id{self.id}'
