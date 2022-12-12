@@ -98,5 +98,8 @@ class PyrusModel(Generic[T]):
             new_item = type(self).from_pyrus_data(data)
             self.__dict__ = new_item.__dict__
 
-    def get_url(self):
+    def get_url(self) -> str:
         return f'https://pyrus.com/t#id{self.id}'
+
+    def __repr__(self) -> str:
+        return f'Task {self.get_url()}'

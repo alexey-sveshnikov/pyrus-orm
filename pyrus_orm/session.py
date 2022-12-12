@@ -1,10 +1,15 @@
 from __future__ import annotations
+
 import contextlib
 from functools import lru_cache
-from typing import Any, Optional, TYPE_CHECKING
+from pprint import pprint
+from typing import Any, Optional, TYPE_CHECKING, Iterable
+
+from pyrus.models.requests import FormRegisterRequest
 
 if TYPE_CHECKING:
     from pyrus import PyrusAPI
+    from pyrus.models.entities import FormRegisterFilter
 
 
 class PyrusORMSession:
@@ -68,6 +73,27 @@ class PyrusORMSession:
             raise Exception('no task received')
 
         return response['task']
+
+    def get_filtered_tasks(
+        self,
+        form_id: int,
+        include_archived: bool = False,
+        steps: Iterable[int] = (),
+        filters: Iterable[FormRegisterFilter] = (),
+    ):
+        request = FormRegisterRequest(
+            include_archived=include_archived,
+            steps=list(steps),
+            filters=filters,
+        )
+        response = self.pyrus_api._perform_post_request(
+            self.pyrus_api._create_url(f'/forms/{form_id}/register'),
+            request,
+        )
+        if 'error' in response:
+            raise Exception(response['error'])  # TODO: proper error handling
+
+        return response.get('tasks', [])
 
 
 _session: Optional[PyrusORMSession] = None

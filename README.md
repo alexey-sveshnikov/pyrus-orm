@@ -113,6 +113,31 @@ class Book(PyrusModel):
     media = CatalogEnumField(<field_id>, catalog_id=<catalog_id>, enum=Genre, id_field='Name')
 ```
 
+### Filtering
+
+Only basic filtering is supported:
+
+```python
+
+Book.objects.get_filtered(
+    title='Don Quixote',
+)
+>>> [Book(...), ...]
+
+
+Book.objects.get_filtered(
+    genre=Book.genre.find({'Name': 'Fiction'})
+)
+>>> [Book(...), ...]
+
+Book.objects.get_filtered(
+    ...
+    include_archived=True,
+    steps=[1, 2],
+)
+>>> [Book(...), ...]
+```
+
 
 ### Explore things
 
