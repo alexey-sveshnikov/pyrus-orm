@@ -9,6 +9,13 @@ Works with [pyrus-api](https://github.com/simplygoodsoftware/pyrusapi-python) un
 
 ### This is an early development version
 
+Installation
+-----------
+
+```shell
+pip install pyrus-orm
+```
+
 Examples
 -------
 
