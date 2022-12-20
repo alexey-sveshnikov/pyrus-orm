@@ -48,7 +48,8 @@ class PyrusModel(Generic[T]):
                 }
 
         for k, v in kwargs.items():
-            setattr(self, k, v)
+            if v is not None:
+                setattr(self, k, v)
 
     @classmethod
     def from_pyrus_data(
@@ -112,6 +113,11 @@ class PyrusModel(Generic[T]):
             data = get_session().create_task(self.as_pyrus_data())
             new_item = type(self).from_pyrus_data(data)
             self.__dict__ = new_item.__dict__
+
+    def comment(self, comment: str) -> None:
+        assert self.id
+        get_session().comment_task(self.id, comment)
+
 
     def get_url(self) -> str:
         return f'https://pyrus.com/t#id{self.id}'

@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import contextlib
 from functools import lru_cache
-from pprint import pprint
 from typing import Any, Optional, TYPE_CHECKING, Iterable
 
-from pyrus.models.requests import FormRegisterRequest
+from pyrus.models.requests import FormRegisterRequest, TaskCommentRequest
 
 if TYPE_CHECKING:
     from pyrus import PyrusAPI
@@ -94,6 +93,9 @@ class PyrusORMSession:
             raise Exception(response['error'])  # TODO: proper error handling
 
         return response.get('tasks', [])
+
+    def comment_task(self, task_id: int, comment: str) -> None:
+        self.pyrus_api.comment_task(task_id, TaskCommentRequest(text=comment))
 
 
 _session: Optional[PyrusORMSession] = None
