@@ -33,7 +33,7 @@ class BaseField(Generic[T]):
         self.name = name
 
     def __get__(self, instance: 'PyrusModel', owner) -> Optional[T]:
-        return instance._field_values[self.id]['value']
+        return instance._field_values[self.id].get('value')
 
     def __set__(self, instance, value: T):
         instance._field_values[self.id]['value'] = value

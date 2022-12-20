@@ -2,9 +2,11 @@ import copy
 from datetime import datetime
 from typing import Any, TypeVar, Type, Optional, Generic
 
+from pyrus_orm.catalog import CatalogItem, CatalogEmptyValue
 from pyrus_orm.fields import BaseField
-from pyrus_orm.manager import _ManagerProperty
+from pyrus_orm.manager import Manager
 from pyrus_orm.session import get_session
+from pyrus_orm.utils import classproperty
 
 T = TypeVar('T', bound='PyrusModel')
 
@@ -18,15 +20,16 @@ class PyrusModel(Generic[T]):
     _field_values: dict[int, Any] = {}
     _changed_fields: set[int]
 
-    objects: _ManagerProperty[T]
-
     class Meta:
         form_id: int
         fields: dict[str, BaseField]
 
+    @classproperty
+    def objects(cls: Type[T]) -> Manager[T]:
+        return Manager(cls)
+
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        cls.objects = _ManagerProperty(cls)
 
         try:
             int(cls.Meta.form_id)
@@ -89,6 +92,18 @@ class PyrusModel(Generic[T]):
             values = [x for x in values if x['id'] in self._changed_fields]
 
         return sorted(values, key=lambda f: f['id'])
+
+    def as_dict(self) -> dict[str, Any]:
+        values = {}
+        for field_name in self.Meta.fields.keys():
+            value = getattr(self, field_name)
+            if isinstance(value, CatalogItem):
+                value = value.values
+            elif isinstance(value, CatalogEmptyValue):
+                value = None
+            values[field_name] = value
+
+        return values
 
     def save(self, comment: Optional[str] = None):
         if self.id:

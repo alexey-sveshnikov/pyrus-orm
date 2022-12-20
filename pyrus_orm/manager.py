@@ -53,5 +53,5 @@ class _ManagerProperty(Generic[T]):
     def __init__(self, model: Type[T]):
         self._model = model
 
-    def __get__(self, instance, owner):
+    def __get__(self, instance, owner) -> Manager[T]:
         return Manager(self._model)
