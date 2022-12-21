@@ -16,6 +16,7 @@ Works with [pyrus-api](https://github.com/simplygoodsoftware/pyrusapi-python) un
     - [x] catalog fields, single item
     - [ ] catalog fields, multiple items
     - [ ] "title" fields
+    - [x] multiple choice fields (without nested fields at this moment)
 - Operations with models:
     - [x] Create and save
     - [x] Read from registry by ID

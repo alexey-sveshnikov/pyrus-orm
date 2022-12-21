@@ -154,3 +154,28 @@ class CatalogEnumField(BaseField[T_Enum]):
             'item_id': item_id
         }
         instance._changed_fields.add(self.id)
+
+
+class MultipleChoiceField(BaseField[set[T_Enum]]):
+    type = 'multiple_choice'
+    _enum: Type[T_Enum]
+
+    def __init__(self, id: int, *, enum: Type[T_Enum]):
+        super().__init__(id)
+        self._enum = enum
+
+    def __get__(self, instance: 'PyrusModel', owner) -> set[T_Enum]:
+        try:
+            field_value = instance._field_values[self.id]['value']
+        except (KeyError, AttributeError):
+            return set()
+
+        choice_ids = field_value['choice_ids']
+
+        return set(self._enum(x) for x in choice_ids)
+
+    def __set__(self, instance: 'PyrusModel', value: set[T_Enum]):
+        instance._field_values[self.id]['value'] = {
+            'choice_ids': [x.value for x in value]
+        }
+        instance._changed_fields.add(self.id)
