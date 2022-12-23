@@ -67,13 +67,19 @@ class PyrusModel(Generic[T]):
         last_modified_date = datetime.fromisoformat(fix_datetime(data['last_modified_date']))
 
         fields = data.pop('fields')
+        flatten_fields = []
+        for field in fields:
+            if field['type'] == 'title':
+                flatten_fields.extend(field['value']['fields'])  # check if title fields may be nested
+            else:
+                flatten_fields.append(field)
 
         obj = cls(
             id=data['id'],
             _data=data,
             _field_values={
                 f['id']: f
-                for f in fields
+                for f in flatten_fields
             },
             create_date=create_date,
             last_modified_date=last_modified_date,
@@ -117,7 +123,6 @@ class PyrusModel(Generic[T]):
     def comment(self, comment: str) -> None:
         assert self.id
         get_session().comment_task(self.id, comment)
-
 
     def get_url(self) -> str:
         return f'https://pyrus.com/t#id{self.id}'

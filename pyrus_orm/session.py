@@ -79,12 +79,17 @@ class PyrusORMSession:
         include_archived: bool = False,
         steps: Iterable[int] = (),
         filters: Iterable[FormRegisterFilter] = (),
+        only: Iterable[int] = (),
     ):
         request = FormRegisterRequest(
             include_archived=include_archived,
             steps=list(steps),
             filters=filters,
         )
+        if only:
+            request.field_ids = only
+
+
         response = self.pyrus_api._perform_post_request(
             self.pyrus_api._create_url(f'/forms/{form_id}/register'),
             request,
