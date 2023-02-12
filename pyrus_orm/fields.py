@@ -1,5 +1,6 @@
+from datetime import date, time, datetime
 from enum import Enum
-from typing import Literal, Optional, Generic, TypeVar, Union, TYPE_CHECKING, Type
+from typing import Literal, Optional, Generic, TypeVar, Union, TYPE_CHECKING, Type, cast, Any
 
 from .catalog import CatalogItem, CatalogEmptyValue, _CatalogListWrapper
 from .session import get_session
@@ -39,6 +40,14 @@ class BaseField(Generic[T]):
         instance._field_values[self.id]['value'] = value
         instance._changed_fields.add(self.id)
 
+    @classmethod
+    def deserialize_from_pyrus(cls, value: Any) -> T:
+        return cast(T, value)
+
+    @classmethod
+    def serialize_to_pyrus(cls, value: T) -> Any:
+        return value
+
 
 class TextField(BaseField[str]):
     type = 'text'
@@ -46,6 +55,42 @@ class TextField(BaseField[str]):
 
 class NumericField(BaseField[float]):
     type = 'number'
+
+    @classmethod
+    def deserialize_from_pyrus(cls, value: Any) -> T:
+        return float(value)
+
+
+class IntegerField(BaseField[int]):
+    type = 'number'
+
+    @classmethod
+    def deserialize_from_pyrus(cls, value: Any) -> T:
+        return int(value)
+
+
+class DateField(BaseField[date]):
+    type = 'date'
+
+    @classmethod
+    def deserialize_from_pyrus(cls, value: Any) -> T:
+        return date.fromisoformat(value)
+
+    @classmethod
+    def serialize_to_pyrus(cls, value: T) -> Any:
+        return value.isoformat()
+
+
+class TimeField(BaseField[time]):
+    type = 'time'
+
+    @classmethod
+    def deserialize_from_pyrus(cls, value: Any) -> T:
+        return datetime.strptime(value, '%H:%M').time()
+
+    @classmethod
+    def serialize_to_pyrus(cls, value: T) -> Any:
+        return value.strftime('%H:%M')
 
 
 class StepField(BaseField[int]):

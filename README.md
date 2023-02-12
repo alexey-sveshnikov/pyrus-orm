@@ -45,8 +45,11 @@ Examples
 
 class Book(PyrusModel):
     title = TextField(1)  # 1 is a field ID in pyrus's form
-    date = DateField(2)
-    author = CatalogField(3, catalog=<catalog id>)
+    time = TimeField(2)
+    date = DateField(3)
+    number = NumericField(4)
+    round_number = IntegerField(5)
+    author = CatalogField(6, catalog=<catalog id>)
 
     class Meta:
         form_id = <form_id>

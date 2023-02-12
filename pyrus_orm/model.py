@@ -1,4 +1,5 @@
 import copy
+import sys
 from datetime import datetime
 from typing import Any, TypeVar, Type, Optional, Generic
 
@@ -41,15 +42,15 @@ class PyrusModel(Generic[T]):
         self._changed_fields = set()
         self.id = None
 
-        for field_name, field in self.Meta.fields.items():
-            if field_name not in self._field_values:
-                self._field_values[field.id] = {
-                    'id': field.id,
-                }
-
         for k, v in kwargs.items():
             if v is not None:
                 setattr(self, k, v)
+
+        for field_name, field in self.Meta.fields.items():
+            if field.id not in self._field_values:
+                self._field_values[field.id] = {
+                    'id': field.id,
+                }
 
     @classmethod
     def from_pyrus_data(
@@ -67,20 +68,37 @@ class PyrusModel(Generic[T]):
         last_modified_date = datetime.fromisoformat(fix_datetime(data['last_modified_date']))
 
         fields = data.pop('fields')
-        flatten_fields = []
+
+        # Flatten 'title' fields. Title is a field type which groups another fields inside.
+        flatten_fields = {}
         for field in fields:
-            if field['type'] == 'title':
-                flatten_fields.extend(field['value']['fields'])  # check if title fields may be nested
+            if field['type'] == 'title':  # TODO: check if title fields can be nested
+                flatten_fields.update({
+                    f['id']: f
+                    for f in field['value']['fields']
+                })
             else:
-                flatten_fields.append(field)
+                flatten_fields[field['id']] = field
+
+        # Convert pyrus types to python
+        for name, field in cls.Meta.fields.items():
+            if field.id not in flatten_fields:
+                continue
+
+            flatten_field = flatten_fields[field.id]
+
+            if flatten_field.get('value') is not None:
+                try:
+                    flatten_field['value'] = field.deserialize_from_pyrus(flatten_field['value'])
+                except Exception as e:
+                    if sys.version_info >= (3, 11):
+                        e.add_note(f"Task id: {data.get('id')}, field struct: {flatten_field}")
+                    raise e
 
         obj = cls(
             id=data['id'],
             _data=data,
-            _field_values={
-                f['id']: f
-                for f in flatten_fields
-            },
+            _field_values=flatten_fields,
             create_date=create_date,
             last_modified_date=last_modified_date,
         )
@@ -94,7 +112,22 @@ class PyrusModel(Generic[T]):
         }
 
     def get_pyrus_fields_data(self, changed_only: bool = False) -> list[Any]:
-        values = list(self._field_values.values())
+        # serialize values to pyrus format
+        values = []
+        for name, field in self.Meta.fields.items():
+            if 'value' not in self._field_values[field.id]:
+                continue
+            value = self._field_values[field.id]['value']
+            try:
+                values.append({
+                    'id': field.id,
+                    'value': field.serialize_to_pyrus(value),
+                })
+            except Exception as e:
+                if sys.version_info >= (3, 11):
+                    e.add_note(f"Task id: {self.id}, field struct: {self._field_values[field.id]}")
+                raise e
+
         if changed_only:
             values = [x for x in values if x['id'] in self._changed_fields]
 
