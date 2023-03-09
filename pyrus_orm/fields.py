@@ -139,7 +139,7 @@ class CatalogField(BaseField):
         )
 
     def __set__(self, instance: 'PyrusModel', value: Union[CatalogItem, int]):
-        assert isinstance(value, (int, CatalogItem)), type(value)
+        assert isinstance(value, (int, CatalogItem)), f'invalid type for {self.name}: {type(value).__name__}'
 
         if isinstance(value, CatalogItem):
             item_id = value.item_id

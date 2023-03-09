@@ -42,15 +42,15 @@ class PyrusModel(Generic[T]):
         self._changed_fields = set()
         self.id = None
 
-        for k, v in kwargs.items():
-            if v is not None:
-                setattr(self, k, v)
-
         for field_name, field in self.Meta.fields.items():
             if field.id not in self._field_values:
                 self._field_values[field.id] = {
                     'id': field.id,
                 }
+
+        for k, v in kwargs.items():
+            if v is not None:
+                setattr(self, k, v)
 
     @classmethod
     def from_pyrus_data(

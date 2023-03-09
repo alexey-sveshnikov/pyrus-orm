@@ -15,7 +15,7 @@ Works with [pyrus-api](https://github.com/simplygoodsoftware/pyrusapi-python) un
     - [x] simple fields (text, number, dates, ...)
     - [x] catalog fields, single item
     - [ ] catalog fields, multiple items
-    - [ ] "title" fields
+    - [ ] "title" fields (pyrus-orm ignores the nested structure of 'title' fields, all its contents are treated as usual root-level fields)
     - [x] multiple choice fields (without nested fields at this moment)
 - Operations with models:
     - [x] Create and save
