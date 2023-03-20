@@ -118,6 +118,17 @@ class FlagField(BaseField[Flag]):
     type = 'flag'
 
 
+class CheckmarkField(BaseField[bool]):
+    type = 'checkmark'
+
+    def __get__(self, instance: 'PyrusModel', owner) -> bool:
+        return instance._field_values[self.id].get('value') == 'checked'
+
+    def __set__(self, instance, value: bool):
+        instance._field_values[self.id]['value'] = 'checked' if value else 'unchecked'
+        instance._changed_fields.add(self.id)
+
+
 class CatalogField(BaseField):
     type = 'catalog'
     _catalog_id: int
