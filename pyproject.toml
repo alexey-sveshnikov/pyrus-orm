@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyrus-orm"
-version = "0.0.9"
+version = "0.0.10"
 description = "Radically simple ORM for Pyrus's tasks"
 authors = ["Alexey Sveshnikov"]
 license = "MIT"

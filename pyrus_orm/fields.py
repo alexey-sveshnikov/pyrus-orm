@@ -94,18 +94,22 @@ class TimeField(BaseField[time]):
         return value.strftime('%H:%M')
 
 
-class DueDateTimeField(BaseField[time]):
+class DueDateTimeField(BaseField[Optional[datetime]]):
     type = 'due_date_time'
 
     @classmethod
     def deserialize_from_pyrus(cls, value: str) -> T:
+        if not value:
+            return None
         if sys.version_info < (3, 11):
             value = value.replace('Z', '+00:00')
         return datetime.fromisoformat(value)
 
     @classmethod
     def serialize_to_pyrus(cls, value: T) -> Any:
-        return value.isoformat()
+        if value:
+            return value.isoformat()
+        return ''
 
 
 class StepField(BaseField[int]):
