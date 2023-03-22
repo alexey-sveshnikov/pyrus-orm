@@ -12,7 +12,7 @@ Works with [pyrus-api](https://github.com/simplygoodsoftware/pyrusapi-python) un
 ### Features:
 
 - Define models with:
-    - [x] simple fields (text, number, dates, ...)
+    - [x] simple fields (text, number, dates, checkmark, flag, ...)
     - [x] catalog fields, single item
     - [ ] catalog fields, multiple items
     - [ ] "title" fields (pyrus-orm ignores the nested structure of 'title' fields, all its contents are treated as usual root-level fields)

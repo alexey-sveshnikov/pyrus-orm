@@ -1,3 +1,4 @@
+import sys
 from datetime import date, time, datetime
 from enum import Enum
 from typing import Literal, Optional, Generic, TypeVar, Union, TYPE_CHECKING, Type, cast, Any
@@ -91,6 +92,20 @@ class TimeField(BaseField[time]):
     @classmethod
     def serialize_to_pyrus(cls, value: T) -> Any:
         return value.strftime('%H:%M')
+
+
+class DueDateTimeField(BaseField[time]):
+    type = 'due_date_time'
+
+    @classmethod
+    def deserialize_from_pyrus(cls, value: str) -> T:
+        if sys.version_info < (3, 11):
+            value = value.replace('Z', '+00:00')
+        return datetime.fromisoformat(value)
+
+    @classmethod
+    def serialize_to_pyrus(cls, value: T) -> Any:
+        return value.isoformat()
 
 
 class StepField(BaseField[int]):
