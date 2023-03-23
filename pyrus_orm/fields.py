@@ -1,5 +1,5 @@
 import sys
-from datetime import date, time, datetime
+from datetime import date, time, datetime, timezone
 from enum import Enum
 from typing import Literal, Optional, Generic, TypeVar, Union, TYPE_CHECKING, Type, cast, Any
 
@@ -108,7 +108,7 @@ class DueDateTimeField(BaseField[Optional[datetime]]):
     @classmethod
     def serialize_to_pyrus(cls, value: T) -> Any:
         if value:
-            return value.isoformat()
+            return value.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
         return ''
 
 
